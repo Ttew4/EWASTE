@@ -1,9 +1,9 @@
-import { salvarPostFirebase, lerPostsFirebase, deletarPostFirebase, atualizarPostFirebase } from './firebase-db.js';
+import { salvarPostFirebase, lerPostsFirebase, deletarPostFirebase, atualizarPostFirebase, salvarVideoFirebase, lerVideosFirebase, deletarVideoFirebase, obterUsuarioFirebase, cadastrarOuAtualizarUsuarioFirebase, obterTodasFotosFirebase, lerImpactoFirebase } from './firebase-db.js';
 
 const NOME_ADMIN = "teteu";
 
 async function iniciarSistema() {
-    let usuarioAtual = localStorage.getItem('usuarioAtual');
+    let usuarioAtual = sessionStorage.getItem('usuarioAtual');
     let paginaAtual = window.location.pathname.split("/").pop();
 
     if (!usuarioAtual && paginaAtual !== 'login.html') {
@@ -19,8 +19,8 @@ async function iniciarSistema() {
     await carregarPerfil();
     await carregarComunidade();
     await carregarDashboard();
-    carregarLibrary();
-    carregarImpacto();
+    await carregarLibrary();
+    await carregarImpacto();
     configurarSidebarRetratil();
 }
 
@@ -30,7 +30,7 @@ function configurarSidebarRetratil() {
     
     if (!toggleBtn || !aside) return;
 
-    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    const isCollapsed = sessionStorage.getItem('sidebarCollapsed') === 'true';
     
     if (isCollapsed) {
         aside.classList.add('collapsed');
@@ -46,32 +46,31 @@ function configurarSidebarRetratil() {
         
         if (aside.classList.contains('collapsed')) {
             toggleBtn.innerHTML = '&gt;';
-            localStorage.setItem('sidebarCollapsed', 'true');
+            sessionStorage.setItem('sidebarCollapsed', 'true');
         } else {
             toggleBtn.innerHTML = 'VidaUtil &lt;';
-            localStorage.setItem('sidebarCollapsed', 'false');
+            sessionStorage.setItem('sidebarCollapsed', 'false');
         }
     };
 }
 
-function fazerLogin(event) {
+async function fazerLogin(event) {
     event.preventDefault();
     let nome = document.getElementById('login-nome').value.trim();
     let senhaDigitada = document.getElementById('login-senha').value.trim();
-    let bancoUsuarios = JSON.parse(localStorage.getItem('meusUsuarios')) || {};
 
     if (nome && senhaDigitada) {
-        if (bancoUsuarios.hasOwnProperty(nome)) {
-            if (senhaDigitada === bancoUsuarios[nome]) {
-                localStorage.setItem('usuarioAtual', nome);
+        let userDados = await obterUsuarioFirebase(nome);
+        if (userDados) {
+            if (senhaDigitada === userDados.senha) {
+                sessionStorage.setItem('usuarioAtual', nome);
                 window.location.href = 'dashboard.html';
             } else {
                 alert("Senha incorreta.");
             }
         } else {
-            bancoUsuarios[nome] = senhaDigitada;
-            localStorage.setItem('meusUsuarios', JSON.stringify(bancoUsuarios));
-            localStorage.setItem('usuarioAtual', nome);
+            await cadastrarOuAtualizarUsuarioFirebase(nome, { senha: senhaDigitada, fotoPerfil: "" });
+            sessionStorage.setItem('usuarioAtual', nome);
             window.location.href = 'dashboard.html';
         }
     }
@@ -80,10 +79,10 @@ function fazerLogin(event) {
 async function carregarPerfil() {
     const profileDiv = document.getElementById('info-usuario');
     if (profileDiv) {
-        let usuarioAtual = localStorage.getItem('usuarioAtual');
-        let fotosUsuarios = JSON.parse(localStorage.getItem('fotosUsuarios')) || {};
+        let usuarioAtual = sessionStorage.getItem('usuarioAtual');
+        let userDados = await obterUsuarioFirebase(usuarioAtual);
         let avatarPadrao = `https://ui-avatars.com/api/?name=${usuarioAtual}&background=0b1326&color=4EDEA3`;
-        let fotoSrc = fotosUsuarios[usuarioAtual] || avatarPadrao;
+        let fotoSrc = (userDados && userDados.fotoPerfil) ? userDados.fotoPerfil : avatarPadrao;
 
         if (usuarioAtual) {
             profileDiv.innerHTML = `
@@ -105,7 +104,7 @@ async function renderizarPostsUsuario() {
     const postsContainer = document.getElementById('posts-usuario');
     if (!postsContainer) return;
 
-    let usuarioAtual = localStorage.getItem('usuarioAtual');
+    let usuarioAtual = sessionStorage.getItem('usuarioAtual');
     let postagens = await lerPostsFirebase();
     let postsDoUsuario = postagens.filter(post => post.autor === usuarioAtual);
     
@@ -133,27 +132,25 @@ function salvarFotoPerfil(event) {
     let file = event.target.files[0];
     if (file) {
         let reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = async function(e) {
             let base64Image = e.target.result;
-            let usuarioAtual = localStorage.getItem('usuarioAtual');
-            let fotosUsuarios = JSON.parse(localStorage.getItem('fotosUsuarios')) || {};
-            fotosUsuarios[usuarioAtual] = base64Image;
-            localStorage.setItem('fotosUsuarios', JSON.stringify(fotosUsuarios));
+            let usuarioAtual = sessionStorage.getItem('usuarioAtual');
+            await cadastrarOuAtualizarUsuarioFirebase(usuarioAtual, { fotoPerfil: base64Image });
             document.getElementById('img-perfil').src = base64Image;
-            renderizarPostagens();
+            await renderizarPostagens();
         };
         reader.readAsDataURL(file);
     }
 }
 
 function fazerLogout() {
-    localStorage.removeItem('usuarioAtual');
+    sessionStorage.removeItem('usuarioAtual');
     window.location.href = 'login.html';
 }
 
 async function carregarComunidade() {
     const painelPostagem = document.getElementById('painel-postagem');
-    let usuarioAtual = localStorage.getItem('usuarioAtual');
+    let usuarioAtual = sessionStorage.getItem('usuarioAtual');
     if (usuarioAtual && painelPostagem) {
         painelPostagem.style.display = 'block';
     }
@@ -196,7 +193,7 @@ function postarMensagem() {
     let titulo = document.getElementById('titulo-post').value;
     let conteudo = document.getElementById('conteudo-post').value;
     let inputArquivo = document.getElementById('imagem-post');
-    let usuarioAtual = localStorage.getItem('usuarioAtual');
+    let usuarioAtual = sessionStorage.getItem('usuarioAtual');
 
     if (titulo.trim() === "" || conteudo.trim() === "") {
         alert("Preencha o título e o conteúdo!");
@@ -249,7 +246,7 @@ async function alternarFixarPostagem(id) {
     let postagens = await lerPostsFirebase();
     let post = postagens.find(p => p.id === id);
     if (post) {
-        await atualizarPostFirebase(id, { fixado: !post.fixado });
+        await updateDoc(doc(db, "postagens", id), { fixado: !post.fixado });
         await renderizarPostagens();
         await carregarDashboard();
     }
@@ -273,7 +270,7 @@ async function curtirPostagem(id) {
     let postagens = await lerPostsFirebase();
     let post = postagens.find(p => p.id === id);
     if (post) {
-        let usuarioAtual = localStorage.getItem('usuarioAtual');
+        let usuarioAtual = sessionStorage.getItem('usuarioAtual');
         let curtidas = post.curtidas || [];
         
         if (curtidas.includes(usuarioAtual)) {
@@ -296,7 +293,7 @@ async function adicionarComentario(id) {
     let postagens = await lerPostsFirebase();
     let post = postagens.find(p => p.id === id);
     if (post) {
-        let usuarioAtual = localStorage.getItem('usuarioAtual');
+        let usuarioAtual = sessionStorage.getItem('usuarioAtual');
         let comentarios = post.comentarios || [];
         
         comentarios.push({ autor: usuarioAtual, texto: texto });
@@ -311,8 +308,8 @@ async function renderizarPostagens() {
     const postsContainer = document.getElementById('lista-postagens');
     if (!postsContainer) return;
     let postagens = await lerPostsFirebase();
-    let fotosUsuarios = JSON.parse(localStorage.getItem('fotosUsuarios')) || {};
-    let usuarioAtual = localStorage.getItem('usuarioAtual');
+    let fotosUsuarios = await obterTodasFotosFirebase();
+    let usuarioAtual = sessionStorage.getItem('usuarioAtual');
     postsContainer.innerHTML = '';
     if (postagens.length === 0) {
         postsContainer.innerHTML = '<p style="color: white; font-family: sans-serif;">None</p>';
@@ -389,8 +386,8 @@ async function carregarDashboard() {
     const dashContainer = document.getElementById('melhores-postagens');
     if (!dashContainer) return;
     let postagens = await lerPostsFirebase();
-    let fotosUsuarios = JSON.parse(localStorage.getItem('fotosUsuarios')) || {};
-    let usuarioAtual = localStorage.getItem('usuarioAtual');
+    let fotosUsuarios = await obterTodasFotosFirebase();
+    let usuarioAtual = sessionStorage.getItem('usuarioAtual');
     dashContainer.innerHTML = '';
     let destaques = postagens.filter(post => post.fixado === true);
     if (destaques.length === 0) {
@@ -446,18 +443,18 @@ async function carregarDashboard() {
     });
 }
 
-function carregarLibrary() {
+async function carregarLibrary() {
     let paginaAtual = window.location.pathname.split("/").pop();
     if (paginaAtual !== 'library.html') return;
 
-    let usuarioAtual = localStorage.getItem('usuarioAtual');
+    let usuarioAtual = sessionStorage.getItem('usuarioAtual');
     const painelAdmin = document.getElementById('painel-admin-library');
     
     if (usuarioAtual === NOME_ADMIN && painelAdmin) {
         painelAdmin.style.display = 'block';
     }
 
-    renderizarVideos();
+    await renderizarVideos();
 }
 
 function extrairIdYoutube(url) {
@@ -466,7 +463,7 @@ function extrairIdYoutube(url) {
     return match ? match[1] : null;
 }
 
-function adicionarVideo() {
+async function adicionarVideo() {
     let titulo = document.getElementById('titulo-video').value;
     let categoria = document.getElementById('categoria-video').value;
     let url = document.getElementById('url-video').value;
@@ -484,22 +481,18 @@ function adicionarVideo() {
 
     let thumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 
-    let videos = JSON.parse(localStorage.getItem('videosLibrary')) || [];
-    videos.push({
-        id: Date.now(),
+    await salvarVideoFirebase({
         titulo: titulo,
         categoria: categoria.trim(),
         url: url,
         thumbnail: thumbnail
     });
 
-    localStorage.setItem('videosLibrary', JSON.stringify(videos));
-    
     document.getElementById('titulo-video').value = '';
     document.getElementById('categoria-video').value = '';
     document.getElementById('url-video').value = '';
     
-    renderizarVideos();
+    await renderizarVideos();
 }
 
 async function renderizarVideos() {
@@ -508,8 +501,8 @@ async function renderizarVideos() {
 
     let termoBusca = document.getElementById('buscar-categoria') ? document.getElementById('buscar-categoria').value.trim().toLowerCase() : '';
 
-    let videos = JSON.parse(localStorage.getItem('videosLibrary')) || [];
-    let usuarioAtual = localStorage.getItem('usuarioAtual');
+    let videos = await lerVideosFirebase();
+    let usuarioAtual = sessionStorage.getItem('usuarioAtual');
     let ehAdmin = (usuarioAtual === NOME_ADMIN);
 
     gridVideos.innerHTML = '';
@@ -523,8 +516,8 @@ async function renderizarVideos() {
         return;
     }
 
-    videos.slice().reverse().forEach(video => {
-        let btnExcluir = ehAdmin ? `<button onclick="excluirVideo(${video.id}, event)" style="position: absolute; top: 10px; right: 10px; background-color: #ff4d4d; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; z-index: 10;">🗑️</button>` : '';
+    videos.forEach(video => {
+        let btnExcluir = ehAdmin ? `<button onclick="excluirVideo('${video.id}', event)" style="position: absolute; top: 10px; right: 10px; background-color: #ff4d4d; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; z-index: 10;">🗑️</button>` : '';
         let tagCategoria = video.categoria ? `<span style="background-color: rgba(78,222,163,0.15); color: rgb(78,222,163); padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; margin-top: 12px; display: inline-block; align-self: flex-start; border: 1px solid rgba(78,222,163,0.3); font-weight: bold;">${video.categoria}</span>` : '';
 
         gridVideos.innerHTML += `
@@ -540,13 +533,11 @@ async function renderizarVideos() {
     });
 }
 
-function excluirVideo(id, event) {
+async function excluirVideo(id, event) {
     event.preventDefault(); 
     if(confirm("Tem certeza que deseja excluir este vídeo da Library?")) {
-        let videos = JSON.parse(localStorage.getItem('videosLibrary')) || [];
-        videos = videos.filter(video => video.id !== id);
-        localStorage.setItem('videosLibrary', JSON.stringify(videos));
-        renderizarVideos();
+        await deletarVideoFirebase(id);
+        await renderizarVideos();
     }
 }
 
@@ -612,11 +603,11 @@ function adicionarBalaoChat(remetente, conteudo, alinhamento, corBorda, corNome)
     history.scrollTop = history.scrollHeight;
 }
 
-function carregarImpacto() {
+async function carregarImpacto() {
     let paginaAtual = window.location.pathname.split("/").pop();
     if (paginaAtual !== 'impact.html') return;
 
-    let historicoReciclagem = JSON.parse(localStorage.getItem('historicoReciclagem')) || [];
+    let historicoReciclagem = await lerImpactoFirebase();
     
     let totalPlacas = historicoReciclagem.filter(item => item.categoria === 'Boards').length;
     let totalFios = historicoReciclagem.filter(item => item.categoria === 'Wires').length;
