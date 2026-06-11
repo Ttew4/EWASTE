@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCzrfwg2fzxK-JJHa3g81YlcFpBDA-p5No",
@@ -35,15 +35,44 @@ export async function atualizarPostFirebase(id, dados) {
 }
 
 export async function salvarVideoFirebase(dados) {
-    return await addDoc(collection(db, "biblioteca"), { ...dados, dataAdicao: new Date() });
+    return await addDoc(collection(db, "videos"), { ...dados, dataHora: new Date() });
 }
 
 export async function lerVideosFirebase() {
-    const q = query(collection(db, "biblioteca"), orderBy("dataAdicao", "desc"));
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(collection(db, "videos"));
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
 export async function deletarVideoFirebase(id) {
-    await deleteDoc(doc(db, "biblioteca", id));
+    await deleteDoc(doc(db, "videos", id));
+}
+
+export async function obterUsuarioFirebase(nome) {
+    const docRef = doc(db, "usuarios", nome);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return docSnap.data();
+    }
+    return null;
+}
+
+export async function cadastrarOuAtualizarUsuarioFirebase(nome, dados) {
+    const docRef = doc(db, "usuarios", nome);
+    await setDoc(docRef, dados, { merge: true });
+}
+
+export async function obterTodasFotosFirebase() {
+    const snapshot = await getDocs(collection(db, "usuarios"));
+    let fotos = {};
+    snapshot.forEach(doc => {
+        if (doc.data().fotoPerfil) {
+            fotos[doc.id] = doc.data().fotoPerfil;
+        }
+    });
+    return fotos;
+}
+
+export async function lerImpactoFirebase() {
+    const snapshot = await getDocs(collection(db, "reciclagem"));
+    return snapshot.docs.map(doc => doc.data());
 }
