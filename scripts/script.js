@@ -228,7 +228,9 @@ async function salvarPost(titulo, conteudo, arquivo, usuarioAtual) {
         conteudo: conteudo,
         arquivo: arquivo,
         imagem: null,
-        fixado: false
+        fixado: false,
+        curtidas: [],
+        comentarios: []
     });
     document.getElementById('titulo-post').value = '';
     document.getElementById('conteudo-post').value = '';
@@ -267,6 +269,44 @@ async function editarPostagem(id) {
     }
 }
 
+async function curtirPostagem(id) {
+    let postagens = await lerPostsFirebase();
+    let post = postagens.find(p => p.id === id);
+    if (post) {
+        let usuarioAtual = localStorage.getItem('usuarioAtual');
+        let curtidas = post.curtidas || [];
+        
+        if (curtidas.includes(usuarioAtual)) {
+            curtidas = curtidas.filter(u => u !== usuarioAtual);
+        } else {
+            curtidas.push(usuarioAtual);
+        }
+        
+        await atualizarPostFirebase(id, { curtidas: curtidas });
+        await renderizarPostagens();
+        await carregarDashboard();
+    }
+}
+
+async function adicionarComentario(id) {
+    let inputComentario = document.getElementById(`input-comentario-${id}`);
+    let texto = inputComentario.value.trim();
+    if (!texto) return;
+
+    let postagens = await lerPostsFirebase();
+    let post = postagens.find(p => p.id === id);
+    if (post) {
+        let usuarioAtual = localStorage.getItem('usuarioAtual');
+        let comentarios = post.comentarios || [];
+        
+        comentarios.push({ autor: usuarioAtual, texto: texto });
+        
+        await atualizarPostFirebase(id, { comentarios: comentarios });
+        await renderizarPostagens();
+        await carregarDashboard();
+    }
+}
+
 async function renderizarPostagens() {
     const postsContainer = document.getElementById('lista-postagens');
     if (!postsContainer) return;
@@ -296,6 +336,17 @@ async function renderizarPostagens() {
         let conteudoFormatado = formatarTextoPostagem(post.conteudo);
         let htmlArquivo = gerarHtmlArquivo(post);
 
+        let curtidas = post.curtidas || [];
+        let comentarios = post.comentarios || [];
+        let usuarioCurtiu = curtidas.includes(usuarioAtual);
+        let corLike = usuarioCurtiu ? "rgb(78,222,163)" : "white";
+        
+        let htmlComentarios = comentarios.map(c => `
+            <div style="background-color: rgb(11,19,38); padding: 8px; margin-top: 8px; border-radius: 4px; font-size: 0.9rem;">
+                <strong style="color: rgb(78,222,163);">${c.autor}:</strong> <span style="color: white;">${c.texto}</span>
+            </div>
+        `).join('');
+
         postsContainer.innerHTML += `
             <div style="background-color: rgb(13, 23, 44); border: ${bordaPost}; padding: 15px; margin-bottom: 15px; border-radius: 5px; width: 80%; max-width: 600px; text-align: left; font-family: sans-serif;">
                 ${indicativoFixado}
@@ -308,6 +359,22 @@ async function renderizarPostagens() {
                 </div>
                 <p style="color: white; line-height: 1.5; margin-top: 5px; white-space: pre-wrap;">${conteudoFormatado}</p>
                 ${htmlArquivo}
+                
+                <div style="margin-top: 15px; border-top: 1px solid gray; padding-top: 15px;">
+                    <button onclick="curtirPostagem('${post.id}')" style="background: transparent; border: 1px solid ${corLike}; color: ${corLike}; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 15px;">
+                        👍 ${curtidas.length} Likes
+                    </button>
+                    
+                    <div style="margin-bottom: 10px; max-height: 150px; overflow-y: auto;">
+                        ${htmlComentarios}
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <input type="text" id="input-comentario-${post.id}" placeholder="Write a comment..." style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid gray; background-color: rgb(11,19,38); color: white;">
+                        <button onclick="adicionarComentario('${post.id}')" style="background-color: rgb(78,222,163); color: rgb(13, 23, 44); border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer;">Post</button>
+                    </div>
+                </div>
+
                 <div style="margin-top: 15px;">
                     ${btnExcluir}
                     ${btnFixar}
@@ -323,6 +390,7 @@ async function carregarDashboard() {
     if (!dashContainer) return;
     let postagens = await lerPostsFirebase();
     let fotosUsuarios = JSON.parse(localStorage.getItem('fotosUsuarios')) || {};
+    let usuarioAtual = localStorage.getItem('usuarioAtual');
     dashContainer.innerHTML = '';
     let destaques = postagens.filter(post => post.fixado === true);
     if (destaques.length === 0) {
@@ -336,6 +404,17 @@ async function carregarDashboard() {
         let conteudoFormatado = formatarTextoPostagem(post.conteudo);
         let htmlArquivo = gerarHtmlArquivo(post);
 
+        let curtidas = post.curtidas || [];
+        let comentarios = post.comentarios || [];
+        let usuarioCurtiu = curtidas.includes(usuarioAtual);
+        let corLike = usuarioCurtiu ? "rgb(78,222,163)" : "white";
+        
+        let htmlComentarios = comentarios.map(c => `
+            <div style="background-color: rgb(11,19,38); padding: 8px; margin-top: 8px; border-radius: 4px; font-size: 0.9rem;">
+                <strong style="color: rgb(78,222,163);">${c.autor}:</strong> <span style="color: white;">${c.texto}</span>
+            </div>
+        `).join('');
+
         dashContainer.innerHTML += `
             <div style="background-color: rgb(13, 23, 44); border: 2px solid rgb(78,222,163); padding: 15px; margin-bottom: 15px; border-radius: 5px; width: 80%; max-width: 600px; text-align: left; font-family: sans-serif;">
                 <div style="display: flex; align-items: center; margin-bottom: 15px;">
@@ -347,6 +426,21 @@ async function carregarDashboard() {
                 </div>
                 <p style="color: white; line-height: 1.5; margin-top: 5px; white-space: pre-wrap;">${conteudoFormatado}</p>
                 ${htmlArquivo}
+                
+                <div style="margin-top: 15px; border-top: 1px solid gray; padding-top: 15px;">
+                    <button onclick="curtirPostagem('${post.id}')" style="background: transparent; border: 1px solid ${corLike}; color: ${corLike}; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 15px;">
+                        👍 ${curtidas.length} Likes
+                    </button>
+                    
+                    <div style="margin-bottom: 10px; max-height: 150px; overflow-y: auto;">
+                        ${htmlComentarios}
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="input-comentario-${post.id}" placeholder="Write a comment..." style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid gray; background-color: rgb(11,19,38); color: white;">
+                        <button onclick="adicionarComentario('${post.id}')" style="background-color: rgb(78,222,163); color: rgb(13, 23, 44); border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer;">Post</button>
+                    </div>
+                </div>
             </div>
         `;
     });
@@ -394,7 +488,7 @@ function adicionarVideo() {
     videos.push({
         id: Date.now(),
         titulo: titulo,
-        categoria: category.trim(),
+        categoria: categoria.trim(),
         url: url,
         thumbnail: thumbnail
     });
@@ -408,38 +502,7 @@ function adicionarVideo() {
     renderizarVideos();
 }
 
-async function adicionarVideo() {
-    const titulo = document.getElementById('titulo-video').value;
-    const categoria = document.getElementById('categoria-video').value;
-    const url = document.getElementById('url-video').value;
-
-    if (titulo && categoria && url) {
-        try {
-            await salvarVideoFirebase({ titulo, categoria, url });
-            alert("Vídeo adicionado com sucesso!");
-            renderizarVideos(); // Recarrega a lista
-        } catch (e) {
-            console.error("Erro ao salvar: ", e);
-        }
-    }
-}
-
 async function renderizarVideos() {
-    const lista = await lerVideosFirebase();
-    // ... lógica para exibir os vídeos no HTML ...
-}
-
-function excluirVideo(id, event) {
-    event.preventDefault(); 
-    if(confirm("Tem certeza que deseja excluir este vídeo da Library?")) {
-        let videos = JSON.parse(localStorage.getItem('videosLibrary')) || [];
-        videos = videos.filter(video => video.id !== id);
-        localStorage.setItem('videosLibrary', JSON.stringify(videos));
-        renderizarVideos();
-    }
-}
-
-function renderizarVideos() {
     const gridVideos = document.getElementById('grid-videos');
     if (!gridVideos) return;
 
@@ -475,6 +538,16 @@ function renderizarVideos() {
             </a>
         `;
     });
+}
+
+function excluirVideo(id, event) {
+    event.preventDefault(); 
+    if(confirm("Tem certeza que deseja excluir este vídeo da Library?")) {
+        let videos = JSON.parse(localStorage.getItem('videosLibrary')) || [];
+        videos = videos.filter(video => video.id !== id);
+        localStorage.setItem('videosLibrary', JSON.stringify(videos));
+        renderizarVideos();
+    }
 }
 
 function enviarMensagemChat() {
@@ -543,8 +616,6 @@ function carregarImpacto() {
     let paginaAtual = window.location.pathname.split("/").pop();
     if (paginaAtual !== 'impact.html') return;
 
-    let usuarioAtual = localStorage.getItem('usuarioAtual');
-    
     let historicoReciclagem = JSON.parse(localStorage.getItem('historicoReciclagem')) || [];
     
     let totalPlacas = historicoReciclagem.filter(item => item.categoria === 'Boards').length;
@@ -596,6 +667,8 @@ window.postarMensagem = postarMensagem;
 window.excluirPostagem = excluirPostagem;
 window.alternarFixarPostagem = alternarFixarPostagem;
 window.editarPostagem = editarPostagem;
+window.curtirPostagem = curtirPostagem;
+window.adicionarComentario = adicionarComentario;
 window.adicionarVideo = adicionarVideo;
 window.excluirVideo = excluirVideo;
 window.enviarMensagemChat = enviarMensagemChat;
