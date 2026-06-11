@@ -36,3 +36,20 @@ export async function deletarPostFirebase(id) {
 export async function atualizarPostFirebase(id, dados) {
     await updateDoc(doc(db, "postagens", id), dados);
 }
+
+export async function salvarVideoFirebase(dados) {
+    return await addDoc(collection(db, "biblioteca"), {
+        ...dados,
+        dataAdicao: new Date()
+    });
+}
+
+export async function lerVideosFirebase() {
+    const q = query(collection(db, "biblioteca"), orderBy("dataAdicao", "desc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+export async function deletarVideoFirebase(id) {
+    await deleteDoc(doc(db, "biblioteca", id));
+}
