@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Waste - Login</title>
+    <link rel="stylesheet" href="style/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@200..700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgb(11,19,38); 
+        }
+        
+        .login-box {
+            background-color: rgb(13, 23, 44);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgb(78,222,163);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 320px;
+            font-family: sans-serif;
+        }
+
+        .login-box h2 {
+            color: rgb(78,222,163);
+            margin-bottom: 20px;
+            font-family: 'Stack Sans Headline', sans-serif;
+            font-size: 2rem;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            background: rgb(11,19,38);
+            color: white;
+            border: 1px solid rgb(136, 136, 136);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: rgb(78,222,163);
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background-color: rgb(78,222,163);
+            color: rgb(13, 23, 44);
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        .login-box button:hover {
+            background-color: rgb(78, 222, 215);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>VidaUtil</h2>
+        <form id="loginForm" onsubmit="fazerLogin(event)">
+            <input type="text" id="login-nome" placeholder="User Name" required>
+            <input type="password" id="login-senha" placeholder="Password" required>
+            <button type="submit">Enter / Create account </button>
+        </form>
+    </div>
+
+    <script type="module" src="scripts/firebase-db.js"></script>
+    <script type="module" src="scripts/script.js"></script>
+</body>
+</html>

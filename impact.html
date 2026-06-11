@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Waste - Impact Stats</title>
+    <link rel="stylesheet" href="style/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@200..700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<aside>
+    <div id="logo">
+        <h2 id="toggle-sidebar" style="cursor: pointer; user-select: none;">VidaUtil &lt;</h2>
+        <p>E-WASTE RECYCLE</p>
+    </div>
+    <a id="dash" href="dashboard.html">☰ <span class="nav-text">Dashboard</span></a>
+    <a id="scan" href="scanner.html">⛶ <span class="nav-text">Scanner</span></a>
+    <a id="lib" href="library.html">🕮 <span class="nav-text">Library</span></a>
+    <a id="com" href="community.html">🖳 <span class="nav-text">Community</span></a>
+    <span class="baixo">
+        <div id="bottom">
+            <a id="impact" href="impact.html">᯽ <span class="nav-text">Impact Stats</span></a>
+            <a id="profile" href="profile.html">🗣 <span class="nav-text">Profile</span></a>
+        </div>
+    </span>
+    </aside>
+
+    <main>
+        <h1>Impact Stats</h1>
+        <p style="color: rgb(136, 136, 136);">See your statistics and contributions to the environment.</p>
+
+        <div style="background-color: rgb(13, 23, 44); border: 1px solid rgb(78,222,163); padding: 25px; border-radius: 8px; max-width: 600px; width: 80%; margin-top: 30px;">
+            <canvas id="graficoOndeReciclado" style="max-height: 300px;"></canvas>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script type="module" src="scripts/firebase-db.js"></script>
+    <script type="module" src="scripts/script.js"></script>
+</body>
+</html>

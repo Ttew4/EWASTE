@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Waste - Dashboard</title>
+    <link rel="stylesheet" href="style/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@200..700&display=swap" rel="stylesheet">
+</head>
+<body>
+   <aside>
+    <div id="logo">
+        <h2 id="toggle-sidebar" style="cursor: pointer; user-select: none;">VidaUtil &lt;</h2>
+        <p>E-WASTE RECYCLE</p>
+    </div>
+    <a id="dash" href="dashboard.html">☰ <span class="nav-text">Dashboard</span></a>
+    <a id="scan" href="scanner.html">⛶ <span class="nav-text">Scanner</span></a>
+    <a id="lib" href="library.html">🕮 <span class="nav-text">Library</span></a>
+    <a id="com" href="community.html">🖳 <span class="nav-text">Community</span></a>
+    <span class="baixo">
+        <div id="bottom">
+            <a id="impact" href="impact.html">᯽ <span class="nav-text">Impact Stats</span></a>
+            <a id="profile" href="profile.html">🗣 <span class="nav-text">Profile</span></a>
+        </div>
+    </span>
+    </aside>
+
+    <main>
+        <h1>Dashboard</h1>
+        <p style="color: rgb(136, 136, 136); margin-bottom: 30px; font-family: sans-serif;">
+            Welcome! Check the best posts bellow.
+        </p>
+        
+        <div id="melhores-postagens" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+            </div>
+    </main>
+
+   <script type="module" src="scripts/firebase-db.js"></script>
+    <script type="module" src="scripts/script.js"></script>
+</body>
+</html>

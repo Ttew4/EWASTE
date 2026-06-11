@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Waste - Community</title>
+    <link rel="stylesheet" href="style/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@200..700&display=swap" rel="stylesheet">
+</head>
+<body>
+<aside>
+    <div id="logo">
+        <h2 id="toggle-sidebar" style="cursor: pointer; user-select: none;">VidaUtil &lt;</h2>
+        <p>E-WASTE RECYCLE</p>
+    </div>
+    <a id="dash" href="dashboard.html">☰ <span class="nav-text">Dashboard</span></a>
+    <a id="scan" href="scanner.html">⛶ <span class="nav-text">Scanner</span></a>
+    <a id="lib" href="library.html">🕮 <span class="nav-text">Library</span></a>
+    <a id="com" href="community.html">🖳 <span class="nav-text">Community</span></a>
+    <span class="baixo">
+        <div id="bottom">
+            <a id="impact" href="impact.html">᯽ <span class="nav-text">Impact Stats</span></a>
+            <a id="profile" href="profile.html">🗣 <span class="nav-text">Profile</span></a>
+        </div>
+    </span>
+</aside>
+
+    <main>
+        <h1>Community</h1>
+
+        <div id="painel-postagem" style="display: none; background-color: rgb(13, 23, 44); padding: 20px; border-radius: 8px; margin-bottom: 30px; width: 80%; max-width: 600px; border: 1px solid rgb(78,222,163);">
+            <h2 style="color: rgb(78,222,163); margin-top: 0;">New Post</h2>
+            <input type="text" id="titulo-post" placeholder="Title" style="width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; background: rgb(11,19,38); color: white; border: 1px solid gray; border-radius: 4px;">
+            <textarea id="conteudo-post" placeholder="Content..." rows="4" style="width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; background: rgb(11,19,38); color: white; border: 1px solid gray; resize: vertical; border-radius: 4px; font-family: sans-serif;"></textarea>
+            
+            <div style="margin-bottom: 15px; text-align: left; font-family: sans-serif;">
+                <input type="file" id="imagem-post" style="color: rgb(gray); font-size: 0.9rem;">
+            </div>
+
+            <button onclick="postarMensagem()" style="padding: 10px 20px; background-color: rgb(78,222,163); color: rgb(13, 23, 44); border: none; font-weight: bold; cursor: pointer; border-radius: 4px;">Post!</button>
+        </div>
+
+        <div id="lista-postagens" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+            </div>
+    </main>
+
+   <script type="module" src="scripts/firebase-db.js"></script>
+    <script type="module" src="scripts/script.js"></script>
+</body>
+</html>

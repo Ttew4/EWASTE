@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Waste</title>
+    <link rel="stylesheet" href="style/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@200..700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+
+   <aside>
+    <div id="logo">
+        <h2 id="toggle-sidebar" style="cursor: pointer; user-select: none;">VidaUtil &lt;</h2>
+        <p>E-WASTE RECYCLE</p>
+    </div>
+    <a id="dash" href="dashboard.html">☰ <span class="nav-text">Dashboard</span></a>
+    <a id="scan" href="scanner.html">⛶ <span class="nav-text">Scanner</span></a>
+    <a id="lib" href="library.html">🕮 <span class="nav-text">Library</span></a>
+    <a id="com" href="community.html">🖳 <span class="nav-text">Community</span></a>
+    <span class="baixo">
+        <div id="bottom">
+            <a id="impact" href="impact.html">᯽ <span class="nav-text">Impact Stats</span></a>
+            <a id="profile" href="profile.html">🗣 <span class="nav-text">Profile</span></a>
+        </div>
+    </span>
+</aside>
+
+    <main>
+    <h1>AI Scanner</h1>
+    <p style="color: rgb(136, 136, 136); margin-bottom: 20px;">Discover a new way to your e-waste.</p>
+
+    <div id="chat-wrapper" style="width: 80%; max-width: 800px; background-color: rgb(13, 23, 44); border: 1px solid rgb(78,222,163); border-radius: 8px; display: flex; flex-direction: column; height: 65vh; font-family: sans-serif;">
+        
+        <div id="chat-history" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;">
+            <div style="align-self: flex-start; background-color: rgb(11,19,38); border: 1px solid rgb(78,222,163); padding: 10px 15px; border-radius: 8px; color: white; max-width: 80%; line-height: 1.4;">
+                <strong style="color: rgb(78,222,163);">VidaUtil.AI:</strong> Hello! Please attach an image of your component or describe it so I can help with proper disposal or suggest a way to reuse it.
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; padding: 15px; background-color: rgb(11,19,38); border-top: 1px solid rgb(78,222,163); border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+            <input type="file" id="chat-file-input" accept="image/*, .pdf, .txt" style="display: none;" onchange="anexarArquivoChat(event)">
+            
+            <label for="chat-file-input" style="background-color: rgb(13, 23, 44); border: 1px solid gray; color: white; padding: 10px 15px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;" title="Anexar Arquivo">
+                📎
+            </label>
+
+            <input type="text" id="chat-text-input" placeholder="Write something..." style="flex: 1; padding: 10px; background-color: rgb(13, 23, 44); color: white; border: 1px solid gray; border-radius: 4px; outline: none;">
+
+            <button onclick="enviarMensagemChat()" style="background-color: rgb(78,222,163); color: rgb(13, 23, 44); border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                Send
+            </button>
+        </div>
+    </div>
+</main>
+
+    <script type="module" src="scripts/firebase-db.js"></script>
+    <script type="module" src="scripts/script.js"></script>
+</body>
+</html>

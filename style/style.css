@@ -1,0 +1,135 @@
+body{
+    background-color: rgb(11,19,38);
+    color: rgb(78,222,163);
+}
+
+main{
+    color:white;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    font-family: sans-serif;
+
+}
+
+main h1{
+    font-style: italic;
+    color:rgb(78,222,163);
+}
+
+aside{
+    box-sizing: border-box;
+    box-shadow: 2px 0px 0px 0px rgb(136, 136, 136);
+    background-color: rgb(13, 23, 44);
+    color: rgb(136, 136, 136);
+    font-family: 'Stack Sans Headline', sans-serif;
+    font-size: 1.7rem;
+    display: flex;
+    position: fixed;
+    justify-content: flex-start;
+    height: 100%;
+    left: 0;
+    gap: 20px;
+    flex-direction: column;
+    align-items: left;
+    padding: 0rem 1rem 2rem;
+    width: 250px;
+}
+
+aside a,a:visited{
+    color:inherit;
+    text-decoration: none;
+}
+
+
+aside a:hover{
+    background-color: rgb(78, 222, 215);
+    color: rgb(13, 23, 44);
+    border-radius: 2px;
+    padding: 0rem 1rem 0rem 0.2rem;
+}
+
+aside #logo{
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    text-align: left;
+    justify-content: left;
+    margin: 0 1rem 2rem 0;
+}
+
+aside #logo h2{
+    color: rgb(78,222,163);
+    font-size: 2rem;
+    margin: 0;
+    padding: 0;   
+}
+
+aside #logo h2:hover{
+    color:white;
+}
+
+aside #logo p{
+    font-size: 1.25rem;
+    font-family: roboto, monospace, sans-serif;
+    font-style: bold;
+    color: rgb(136, 136, 136);
+    margin: 0;
+    padding: 0;
+}
+
+aside .baixo{
+    margin-top: auto;
+    
+}
+
+
+
+/* 0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0-0 */
+aside {
+    transition: width 0.3s ease, padding 0.3s ease !important;
+}
+
+aside.collapsed {
+    width: 80px !important;
+    padding: 0rem 0rem 2rem !important;
+    align-items: center !important;
+    overflow: hidden !important;
+}
+
+aside.collapsed #logo p,
+aside.collapsed #newproject,
+aside.collapsed .nav-text {
+    display: none !important;
+}
+
+aside.collapsed #logo h2 {
+    text-align: center !important;
+    width: 100% !important;
+    font-size: 1.7rem !important;
+}
+
+aside.collapsed #logo h2:hover{
+    color:white;
+}
+
+#bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+aside.collapsed #bottom {
+    align-items: center !important;
+}
+
+body.sidebar-collapsed main {
+    margin-left: 80px !important;
+    transition: margin-left 0.3s ease !important;
+}
+
+.video-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 8px 15px rgba(78, 222, 163, 0.2);
+}
