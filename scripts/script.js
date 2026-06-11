@@ -408,6 +408,27 @@ function adicionarVideo() {
     renderizarVideos();
 }
 
+async function adicionarVideo() {
+    const titulo = document.getElementById('titulo-video').value;
+    const categoria = document.getElementById('categoria-video').value;
+    const url = document.getElementById('url-video').value;
+
+    if (titulo && categoria && url) {
+        try {
+            await salvarVideoFirebase({ titulo, categoria, url });
+            alert("Vídeo adicionado com sucesso!");
+            renderizarVideos(); // Recarrega a lista
+        } catch (e) {
+            console.error("Erro ao salvar: ", e);
+        }
+    }
+}
+
+async function renderizarVideos() {
+    const lista = await lerVideosFirebase();
+    // ... lógica para exibir os vídeos no HTML ...
+}
+
 function excluirVideo(id, event) {
     event.preventDefault(); 
     if(confirm("Tem certeza que deseja excluir este vídeo da Library?")) {
