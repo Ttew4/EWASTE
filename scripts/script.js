@@ -1,10 +1,12 @@
+import { salvarPostFirebase, lerPostsFirebase, deletarPostFirebase, atualizarPostFirebase } from './firebase-db.js';
+
 const NOME_ADMIN = "teteu";
 
-function iniciarSistema() {
+async function iniciarSistema() {
     let usuarioAtual = localStorage.getItem('usuarioAtual');
     let paginaAtual = window.location.pathname.split("/").pop();
 
-    if (!usuarioAtual && paginaAtual !== 'login.html' && paginaAtual !== 'index.html' && paginaAtual !== '') {
+    if (!usuarioAtual && paginaAtual !== 'login.html') {
         window.location.href = 'login.html';
         return;
     }
@@ -14,9 +16,9 @@ function iniciarSistema() {
         return;
     }
 
-    carregarPerfil();
-    carregarComunidade();
-    carregarDashboard();
+    await carregarPerfil();
+    await carregarComunidade();
+    await carregarDashboard();
     carregarLibrary();
     carregarImpacto();
     configurarSidebarRetratil();
@@ -75,7 +77,7 @@ function fazerLogin(event) {
     }
 }
 
-function carregarPerfil() {
+async function carregarPerfil() {
     const profileDiv = document.getElementById('info-usuario');
     if (profileDiv) {
         let usuarioAtual = localStorage.getItem('usuarioAtual');
@@ -96,16 +98,15 @@ function carregarPerfil() {
         }
     }
     
-    renderizarPostsUsuario();
+    await renderizarPostsUsuario();
 }
 
-function renderizarPostsUsuario() {
+async function renderizarPostsUsuario() {
     const postsContainer = document.getElementById('posts-usuario');
     if (!postsContainer) return;
 
-    let postagens = JSON.parse(localStorage.getItem('postagensComunidade')) || [];
     let usuarioAtual = localStorage.getItem('usuarioAtual');
-    
+    let postagens = await lerPostsFirebase();
     let postsDoUsuario = postagens.filter(post => post.autor === usuarioAtual);
     
     postsContainer.innerHTML = '';
@@ -114,8 +115,6 @@ function renderizarPostsUsuario() {
         postsContainer.innerHTML = '<p style="color: white; font-family: sans-serif;">No posts</p>';
         return;
     }
-
-    postsDoUsuario.sort((a, b) => b.id - a.id);
     
     postsDoUsuario.forEach(post => {
         let htmlImagem = post.imagem ? `<img src="${post.imagem}" style="width: 100%; max-height: 250px; object-fit: cover; border-radius: 4px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.1);">` : '';
@@ -152,13 +151,13 @@ function fazerLogout() {
     window.location.href = 'login.html';
 }
 
-function carregarComunidade() {
+async function carregarComunidade() {
     const painelPostagem = document.getElementById('painel-postagem');
     let usuarioAtual = localStorage.getItem('usuarioAtual');
     if (usuarioAtual && painelPostagem) {
         painelPostagem.style.display = 'block';
     }
-    renderizarPostagens();
+    await renderizarPostagens();
 }
 
 function formatarTextoPostagem(texto) {
@@ -207,13 +206,13 @@ function postarMensagem() {
     if (inputArquivo && inputArquivo.files && inputArquivo.files[0]) {
         let file = inputArquivo.files[0];
         let reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = async function(e) {
             let objArquivo = {
                 nome: file.name,
                 tipo: file.type,
                 dados: e.target.result
             };
-            salvarPost(titulo, conteudo, objArquivo, usuarioAtual);
+            await salvarPost(titulo, conteudo, objArquivo, usuarioAtual);
             inputArquivo.value = "";
         };
         reader.readAsDataURL(file);
@@ -222,10 +221,8 @@ function postarMensagem() {
     }
 }
 
-function salvarPost(titulo, conteudo, arquivo, usuarioAtual) {
-    let postagens = JSON.parse(localStorage.getItem('postagensComunidade')) || [];
-    postagens.push({ 
-        id: Date.now(), 
+async function salvarPost(titulo, conteudo, arquivo, usuarioAtual) {
+    await salvarPostFirebase({ 
         autor: usuarioAtual,
         titulo: titulo, 
         conteudo: conteudo,
@@ -233,53 +230,47 @@ function salvarPost(titulo, conteudo, arquivo, usuarioAtual) {
         imagem: null,
         fixado: false
     });
-    localStorage.setItem('postagensComunidade', JSON.stringify(postagens));
     document.getElementById('titulo-post').value = '';
     document.getElementById('conteudo-post').value = '';
-    renderizarPostagens();
+    await renderizarPostagens();
 }
 
-function excluirPostagem(id) {
+async function excluirPostagem(id) {
     if(confirm("Tem certeza que deseja excluir esta postagem?")) {
-        let postagens = JSON.parse(localStorage.getItem('postagensComunidade')) || [];
-        postagens = postagens.filter(post => post.id !== id);
-        localStorage.setItem('postagensComunidade', JSON.stringify(postagens));
-        renderizarPostagens();
-        carregarDashboard();
+        await deletarPostFirebase(id);
+        await renderizarPostagens();
+        await carregarDashboard();
     }
 }
 
-function alternarFixarPostagem(id) {
-    let postagens = JSON.parse(localStorage.getItem('postagensComunidade')) || [];
-    let index = postagens.findIndex(post => post.id === id);
-    if (index !== -1) {
-        postagens[index].fixado = !postagens[index].fixado;
-        localStorage.setItem('postagensComunidade', JSON.stringify(postagens));
-        renderizarPostagens();
-        carregarDashboard();
+async function alternarFixarPostagem(id) {
+    let postagens = await lerPostsFirebase();
+    let post = postagens.find(p => p.id === id);
+    if (post) {
+        await atualizarPostFirebase(id, { fixado: !post.fixado });
+        await renderizarPostagens();
+        await carregarDashboard();
     }
 }
 
-function editarPostagem(id) {
-    let postagens = JSON.parse(localStorage.getItem('postagensComunidade')) || [];
-    let index = postagens.findIndex(post => post.id === id);
-    if (index !== -1) {
-        let novoTitulo = prompt("Editar Título:", postagens[index].titulo);
-        let novoConteudo = prompt("Editar Conteúdo:", postagens[index].conteudo);
+async function editarPostagem(id) {
+    let postagens = await lerPostsFirebase();
+    let post = postagens.find(p => p.id === id);
+    if (post) {
+        let novoTitulo = prompt("Editar Título:", post.titulo);
+        let novoConteudo = prompt("Editar Conteúdo:", post.conteudo);
         if (novoTitulo && novoConteudo) {
-            postagens[index].titulo = novoTitulo;
-            postagens[index].conteudo = novoConteudo;
-            localStorage.setItem('postagensComunidade', JSON.stringify(postagens));
-            renderizarPostagens();
-            carregarDashboard();
+            await atualizarPostFirebase(id, { titulo: novoTitulo, conteudo: novoConteudo });
+            await renderizarPostagens();
+            await carregarDashboard();
         }
     }
 }
 
-function renderizarPostagens() {
+async function renderizarPostagens() {
     const postsContainer = document.getElementById('lista-postagens');
     if (!postsContainer) return;
-    let postagens = JSON.parse(localStorage.getItem('postagensComunidade')) || [];
+    let postagens = await lerPostsFirebase();
     let fotosUsuarios = JSON.parse(localStorage.getItem('fotosUsuarios')) || {};
     let usuarioAtual = localStorage.getItem('usuarioAtual');
     postsContainer.innerHTML = '';
@@ -288,7 +279,7 @@ function renderizarPostagens() {
         return;
     }
     postagens.sort((a, b) => {
-        if (a.fixado === b.fixado) return b.id - a.id; 
+        if (a.fixado === b.fixado) return 0; 
         return a.fixado ? -1 : 1;
     });
     postagens.forEach(post => {
@@ -297,9 +288,9 @@ function renderizarPostagens() {
         let avatarPadrao = `https://ui-avatars.com/api/?name=${post.autor}&background=0b1326&color=4EDEA3`;
         let fotoAutor = fotosUsuarios[post.autor] || avatarPadrao;
         let indicativoFixado = post.fixado ? `<span style="background-color: rgb(78,222,163); color: rgb(13,23,44); padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block;">📌 Destaque</span>` : '';
-        let btnExcluir = ehAdmin ? `<button onclick="excluirPostagem(${post.id})" style="background-color: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 10px;">🗑️ Excluir</button>` : '';
-        let btnFixar = ehAdmin ? `<button onclick="alternarFixarPostagem(${post.id})" style="background-color: #f39c12; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 10px;">${post.fixado ? 'Desfixar' : '📌 Destacar'}</button>` : '';
-        let btnEditar = ehAutor ? `<button onclick="editarPostagem(${post.id})" style="background-color: rgb(78,222,163); color: rgb(13, 23, 44); border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">✏️ Editar</button>` : '';
+        let btnExcluir = ehAdmin ? `<button onclick="excluirPostagem('${post.id}')" style="background-color: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 10px;">🗑️ Excluir</button>` : '';
+        let btnFixar = ehAdmin ? `<button onclick="alternarFixarPostagem('${post.id}')" style="background-color: #f39c12; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 10px;">${post.fixado ? 'Desfixar' : '📌 Destacar'}</button>` : '';
+        let btnEditar = ehAutor ? `<button onclick="editarPostagem('${post.id}')" style="background-color: rgb(78,222,163); color: rgb(13, 23, 44); border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">✏️ Editar</button>` : '';
         let bordaPost = post.fixado ? '2px solid rgb(78,222,163)' : '1px solid gray';
 
         let conteudoFormatado = formatarTextoPostagem(post.conteudo);
@@ -327,10 +318,10 @@ function renderizarPostagens() {
     });
 }
 
-function carregarDashboard() {
+async function carregarDashboard() {
     const dashContainer = document.getElementById('melhores-postagens');
     if (!dashContainer) return;
-    let postagens = JSON.parse(localStorage.getItem('postagensComunidade')) || [];
+    let postagens = await lerPostsFirebase();
     let fotosUsuarios = JSON.parse(localStorage.getItem('fotosUsuarios')) || {};
     dashContainer.innerHTML = '';
     let destaques = postagens.filter(post => post.fixado === true);
@@ -403,7 +394,7 @@ function adicionarVideo() {
     videos.push({
         id: Date.now(),
         titulo: titulo,
-        categoria: categoria.trim(),
+        categoria: category.trim(),
         url: url,
         thumbnail: thumbnail
     });
