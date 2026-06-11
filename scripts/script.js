@@ -4,7 +4,7 @@ function iniciarSistema() {
     let usuarioAtual = localStorage.getItem('usuarioAtual');
     let paginaAtual = window.location.pathname.split("/").pop();
 
-    if (!usuarioAtual && paginaAtual !== 'login.html') {
+    if (!usuarioAtual && paginaAtual !== 'login.html' && paginaAtual !== 'index.html' && paginaAtual !== '') {
         window.location.href = 'login.html';
         return;
     }
@@ -577,9 +577,6 @@ function carregarImpacto() {
 
 window.onload = iniciarSistema;
 
-// ==============================================================================
-// EXPORTAÇÃO DE FUNÇÕES PARA O ESCOPO GLOBAL (Obrigatório devido ao uso de módulos)
-// ==============================================================================
 window.fazerLogin = fazerLogin;
 window.fazerLogout = fazerLogout;
 window.salvarFotoPerfil = salvarFotoPerfil;
