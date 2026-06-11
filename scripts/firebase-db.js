@@ -17,10 +17,7 @@ const analytics = getAnalytics(app);
 export const db = getFirestore(app);
 
 export async function salvarPostFirebase(dados) {
-    return await addDoc(collection(db, "postagens"), {
-        ...dados,
-        dataHora: new Date()
-    });
+    return await addDoc(collection(db, "postagens"), { ...dados, dataHora: new Date() });
 }
 
 export async function lerPostsFirebase() {
@@ -38,10 +35,7 @@ export async function atualizarPostFirebase(id, dados) {
 }
 
 export async function salvarVideoFirebase(dados) {
-    return await addDoc(collection(db, "biblioteca"), {
-        ...dados,
-        dataAdicao: new Date()
-    });
+    return await addDoc(collection(db, "biblioteca"), { ...dados, dataAdicao: new Date() });
 }
 
 export async function lerVideosFirebase() {
