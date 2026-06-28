@@ -1,4 +1,4 @@
-import { salvarPostFirebase, lerPostsFirebase, deletarPostFirebase, atualizarPostFirebase, salvarVideoFirebase, lerVideosFirebase, deletarVideoFirebase, obterUsuarioFirebase, cadastrarOuAtualizarUsuarioFirebase, obterTodasFotosFirebase, lerImpactoFirebase } from './firebase-db.js';
+import { salvarPostFirebase, lerPostsFirebase, deletarPostFirebase, atualizarPostFirebase, salvarVideoFirebase, lerVideosFirebase, deletarVideoFirebase, obterUsuarioFirebase, cadastrarOuAtualizarUsuarioFirebase, obterTodasFotosFirebase, lerImpactoFirebase } from 
 
 const NOME_ADMIN = "teteu";
 
